@@ -200,7 +200,7 @@
         //call create_directory
         if(create_directory()){
           alert('returned from create dir');
-          $('#file_upload').uploadifySettings('folder','../Setr.us/music_directory/' + show.artist_abb + '/' + show.id);
+          $('#file_upload').uploadifySettings('folder','../../Setr.us/music_directory/' + show.artist_abb + '/' + show.id);
           //upload all songs
           $('#file_upload').uploadifyUpload();
         }

@@ -2,5 +2,5 @@
 $db_host = "localhost";
 $db_username = "root";
 $db_pass = "";
-$db_database = "musicneverstopped";
+$db_database = "setr.us_db";
 ?>
