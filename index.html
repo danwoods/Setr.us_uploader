@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 
 <head>
-	<title>untitled</title>
+	<title>Uploader</title>
 	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
   <link href="uploadify/uploadify.css" type="text/css" rel="stylesheet" />
   <style type='text/css'> 
@@ -13,11 +13,11 @@
     }
   </style>
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-  <script type="text/javascript" src="../Setr.us/music/uploader/javascript/jquery.qtip-1.0.0-rc3.js"></script>
-  <script type="text/javascript" src="../Setr.us/music/uploader/javascript/jquery-ui-1.7.2.custom.min.js"></script>
+  <script type="text/javascript" src="js/libs/jQuery/jquery-ui-1.7.2.custom.min.js"></script>
+  <script type="text/javascript" src="js/libs/qtip/jquery.qtip-1.0.0-rc3.min.js"></script>
   <!--<script type="text/javascript" src="js/libs/json2.js"></script>-->
-  <link rel=StyleSheet href="../Setr.us/music/uploader/jquery-ui-1.7.2.custom.css" type="text/css" media="screen">
-  <link rel=StyleSheet href="uploaderFrontEnd.css" type="text/css" media="screen">
+  <link rel=StyleSheet href="css/jquery-ui-1.7.2.custom.css" type="text/css" media="screen">
+  <link rel=StyleSheet href="css/uploaderFrontEnd.css" type="text/css" media="screen">
   <script type="text/javascript" src="uploadify/swfobject.js"></script>
   <script type="text/javascript" src="uploadify/jquery.uploadify.v2.1.4.min.js"></script>
   <script type="text/javascript">
@@ -35,6 +35,20 @@
     this.add_info = (typeof add_info == "undefined") ? "" : add_info;
     this.runtime = (typeof runtime == "undefined") ? "" : runtime;
     this.filepath = (typeof filepath == "undefined") ? "" : filepath;
+    this.toJSON = function(){
+                     return '{"song": [ ' +
+                              '{"id": "' + this.id + '", ' +
+                              '"title": "' + this.title + '", ' +
+                              '"artist": "' + this.artist + '", ' +
+                              '"artist": "' + this.artist + '", ' +
+                              '"set_or_encore": "' + this.set_or_encore + '", ' +
+                              '"set_num": "' + this.set_num + '", ' +
+                              '"song_num": "' + this.song_num + '", ' +
+                              '"add_info": "' + this.add_info + '", ' +
+                              '"runtime": "' + this.runtime + '", ' +
+                              '"filepath": "' + this.filepath + '"' +
+                            ']}';
+                  };
     }
     
   function showObj(artist_abb, year, month, day, city, state, venue, num_of_sets, num_of_encores, add_info, uploader){
@@ -43,15 +57,51 @@
     this.year = (typeof year == "undefined") ? "" : year;
     this.month = (typeof month == "undefined") ? "" : month;
     this.day = (typeof day == "undefined") ? "" : day;
+    this.city = (typeof city == "undefined") ? "" : city;
+    this.state = (typeof state == "undefined") ? "" : state;
+    this.venue = (typeof venue == "undefined") ? "" : venue;
     this.num_of_sets = (typeof num_of_sets == "undefined") ? "" : num_of_sets;
     this.num_of_encores = (typeof num_of_encores == "undefined") ? "" : num_of_encores;
     this.add_info = (typeof add_info == "undefined") ? "" : add_info;
-    this.show_xml = (typeof show_xml == "undefined") ? "" : show_xml;
-    this.show_html = (typeof show_html == "undefined") ? "" : show_html;
+    this.xml = (typeof show_xml == "undefined") ? "" : show_xml;
+    this.html = (typeof show_html == "undefined") ? "" : show_html;
     this.uploader = (typeof uploader == "undefined") ? "" : uploader;
     this.id = artist_abb + year + '-' + ((month<10)? ('0' + month) : month) + '-' + ((day<10)? ('0' + day) : day);
     this.songs = new Array();
-    //need this.toJSON() method which just concatenates a returned string
+    this.toJSON = function(){
+                    var json = '{"show": [ ' +
+                                  '{"id": "' + this.id + '", ' +
+                                  '"artist": "' + this.artist + '", ' +
+                                  '"artist_abb": "' + this.artist_abb + '", ' +
+                                  '"year": "' + this.year + '", ' +
+                                  '"month": "' + this.month + '", ' +
+                                  '"day": "' + this.day + '", ' +
+                                  '"city": "' + this.city + '", ' +
+                                  '"state": "' + this.state + '", ' +
+                                  '"venue": "' + this.venue + '", ' +
+                                  '"num_of_sets": "' + this.num_of_sets + '", ' +
+                                  '"num_of_encores": "' + this.num_of_encores + '", ' +
+                                  '"add_info": "' + this.add_info + '", ' +
+                                  '"xml": "' + this.xml + '", ' +
+                                  '"html": "' + this.html + '", ' +
+                                  '"uploader": "' + this.uploader + '", ' +
+                                  '{"songs": [ ';
+                    //add in songs
+                    for(i=0; i<this.songs.length; i++){
+                      json += this.songs[i].toJSON();
+                      if(i !== this.songs.length+2)
+                        json += ', ';
+                      }
+                                  
+                    //finish songs
+                    json += ']}';
+                    
+                    //finish json
+                    json += ']}'; 
+                    
+                    return json; 
+                    
+                  }
     }
     
   function is_valid(){
