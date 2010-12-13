@@ -11,7 +11,7 @@ This software is meant to be used as part of the Setr.us website. It is hosted i
 
 h2. Author
 
-Dan Woodson @http://www.danandjen.com/dan@
+Dan Woodson @http://www.danandjen.us/dan/@
 
 
 
