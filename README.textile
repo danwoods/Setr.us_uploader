@@ -1,0 +1,17 @@
+h1. Setr.us - Uploader
+
+h2. Purpose
+
+To create a modular solution for the unique challenges of uploading various numbers of (possibly large) files,
+ storing those files on a server and recording user submitted meta-data about those files to a specified database.
+
+h2. About
+
+This software is meant to be used as part of the Setr.us website. It is hosted in it's own repository in the hopes that a more modular solution will be produced.
+
+h2. Author
+
+Dan Woodson @http://www.danandjen.com/dan@
+
+
+
