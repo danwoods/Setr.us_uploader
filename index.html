@@ -36,7 +36,7 @@
     this.runtime = (typeof runtime == "undefined") ? "" : runtime;
     this.filepath = (typeof filepath == "undefined") ? "" : filepath;
     this.toJSON = function(){
-                     return '{"song": [ ' +
+                     return '{"song":  ' +
                               '{"id": "' + this.id + '", ' +
                               '"title": "' + this.title + '", ' +
                               '"artist": "' + this.artist + '", ' +
@@ -47,7 +47,7 @@
                               '"add_info": "' + this.add_info + '", ' +
                               '"runtime": "' + this.runtime + '", ' +
                               '"filepath": "' + this.filepath + '"' +
-                            ']}';
+                            '}}';
                   };
     }
     
@@ -57,6 +57,7 @@
     this.year = (typeof year == "undefined") ? "" : year;
     this.month = (typeof month == "undefined") ? "" : month;
     this.day = (typeof day == "undefined") ? "" : day;
+    this.date = this.year + '-'+ this.month + '-' + this.day;
     this.city = (typeof city == "undefined") ? "" : city;
     this.state = (typeof state == "undefined") ? "" : state;
     this.venue = (typeof venue == "undefined") ? "" : venue;
@@ -69,7 +70,7 @@
     this.id = artist_abb + year + '-' + ((month<10)? ('0' + month) : month) + '-' + ((day<10)? ('0' + day) : day);
     this.songs = new Array();
     this.toJSON = function(){
-                    var json = '{"show": [ ' +
+                    var json = '{"show": ' +
                                   '{"id": "' + this.id + '", ' +
                                   '"artist": "' + this.artist + '", ' +
                                   '"artist_abb": "' + this.artist_abb + '", ' +
@@ -85,11 +86,11 @@
                                   '"xml": "' + this.xml + '", ' +
                                   '"html": "' + this.html + '", ' +
                                   '"uploader": "' + this.uploader + '", ' +
-                                  '{"songs": [ ';
+                                  '"songs": [ ';
                     //add in songs
                     for(i=0; i<this.songs.length; i++){
                       json += this.songs[i].toJSON();
-                      if(i !== this.songs.length+2)
+                      if(i < this.songs.length-1)
                         json += ', ';
                       }
                                   
@@ -97,7 +98,7 @@
                     json += ']}';
                     
                     //finish json
-                    json += ']}'; 
+                    json += '}'; 
                     
                     return json; 
                     
@@ -262,17 +263,17 @@
       
   function rename_files(){
     //rename all songs to new id-based names
-    var success = 0;
+    var success = false;
     $.ajax({
       url: 'php/renameFiles.php',
       type: "POST",
+      async: false,
       data: {
         'dir_for_files'       : '/opt/lampp/htdocs/Setr.us/music_directory/' + show.artist_abb + '/' + show.id + '/',
         'song_filename_pairs' : song_filename_pairings
       },
       success: function (data) {
         if(data == 1){
-          alert("names changed!");
           success = true;
           }
       }
@@ -283,13 +284,12 @@
   
   function create_show_record(){
     //create record for the new show
-    var success = 0;
+    var success = false;
     $.ajax({
       url: 'php/createShowRecord.php',
       type: "POST",
       data: {
-        'dir_for_files'       : '/opt/lampp/htdocs/Setr.us/music_directory/' + show.artist_abb + '/' + show.id + '/',
-        'song_filename_pairs' : song_filename_pairings
+        'showJSON' : show.toJSON(),
       },
       success: function (data) {
         if(data == 1){
@@ -305,13 +305,13 @@
   function create_song_records(){
     //create records for all the new songs
     var success = false;
-    
+    alert(show.toJSON());
     $.ajax({
       url: 'php/create_song_records.php',
       type: "POST",
       async: false,
       data: {
-        'showJSON'  : show
+        'showJSON' : show.toJSON()
       },
       success: function (data) {
         if(data == 1){
@@ -601,12 +601,12 @@
                          songs.push(new_song);
                          $('#set1 .songs').append(createNewSong(fileObj, ID));
                          refresh();
-                         //alert('The file ' + fileObj.name + ' was added to the queue.');
                        },
       'onAllComplete' : function(event,data) {
                           alert("All uploads complete");
                           if(rename_files()){
-                            //if(create_song_records){}
+                            alert("files renamed");
+                            if(create_song_records()){alert("song records created");}
                             //create show record
                             //prompt for exit, or upload more
                           }

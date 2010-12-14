@@ -1,2 +1,15 @@
 ToDo:
-  -Fix broken image links
+  - Setup record creation
+  - Setup toXML() function for songs/shows
+  - Songs should be draggable to re-order (look at http://thechriswalker.net/select-drag/)
+  - There should be droppable areas to create a new set/encore (create/expand when hover&&dragging)
+  - Fix tabbing
+  - Fix broken image links
+  - Cleanout php
+  - Cleanout js
+  - Cleanout html
+  - Cleanout git
+
+-- next version
+  - Setup templating
+  - Use api (if available)
