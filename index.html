@@ -51,7 +51,7 @@
                   };
     }
     
-  function showObj(artist_abb, year, month, day, city, state, venue, num_of_sets, num_of_encores, add_info, uploader){
+  function showObj(artist_abb, year, month, day, city, state, venue, uploader){
     this.artist = (typeof artist == "undefined") ? "" : artist;
     this.artist_abb = (typeof artist_abb == "undefined") ? "" : artist_abb;
     this.year = (typeof year == "undefined") ? "" : year;
@@ -61,12 +61,17 @@
     this.city = (typeof city == "undefined") ? "" : city;
     this.state = (typeof state == "undefined") ? "" : state;
     this.venue = (typeof venue == "undefined") ? "" : venue;
-    this.num_of_sets = (typeof num_of_sets == "undefined") ? "" : num_of_sets;
-    this.num_of_encores = (typeof num_of_encores == "undefined") ? "" : num_of_encores;
-    this.add_info = (typeof add_info == "undefined") ? "" : add_info;
-    this.xml = (typeof show_xml == "undefined") ? "" : show_xml;
-    this.html = (typeof show_html == "undefined") ? "" : show_html;
-    this.uploader = (typeof uploader == "undefined") ? "" : uploader;
+    this.num_of_sets = "";
+    this.num_of_encores = "";
+    this.taper = "";
+    this.transfered_by = "";
+    this.source = "";
+    this.lineage = "";
+    this.mic_loc = "";
+    this.notes = "";
+    this.uploader = (typeof uploader == "undefined") ? "test user" : uploader;
+    this.xml = "";//function(){};
+    this.html = "";//function(){};
     this.id = artist_abb + year + '-' + ((month<10)? ('0' + month) : month) + '-' + ((day<10)? ('0' + day) : day);
     this.songs = new Array();
     this.toJSON = function(){
@@ -80,6 +85,11 @@
                                   '"city": "' + this.city + '", ' +
                                   '"state": "' + this.state + '", ' +
                                   '"venue": "' + this.venue + '", ' +
+                                  '"taper": "' + this.taper + '", ' +
+                                  '"transfered_by": "' + this.transfered_by + '", ' +
+                                  '"source": "' + this.source + '", ' +
+                                  '"lineage": "' + this.lineage + '", ' +
+                                  '"mic_loc": "' + this.mic_loc + '", ' +
                                   '"num_of_sets": "' + this.num_of_sets + '", ' +
                                   '"num_of_encores": "' + this.num_of_encores + '", ' +
                                   '"add_info": "' + this.add_info + '", ' +
@@ -113,7 +123,7 @@
     song_filename_pairings = '{"song_name_pairings": [';
     
     /*Initial validation*/
-    //pull required show information and check values
+    //pull required show information
     var band_abb = $("#required_inputs .artist_input option:selected").val();
     
     var year = $(":input[name=year]").val();
@@ -150,9 +160,20 @@
       error = true;
       error_msg += "Missing State<br />";
     }
-    //if all of the above are true, create a new show object
-    else
+    //if all of the above are true, create a new show object,
+    //and retrive any optional show information
+    else{
       show = new showObj(band_abb, year, month, day, city, state, venue);
+      
+      //optional info
+      show.venue = venue;
+      show.taper = $('#optional_inputs input[name="taper"]').val();
+      show.transfered_by = $('#optional_inputs input[name="transfered_by"]').val();
+      show.source = $('#optional_inputs textarea[name="source"]').val();
+      show.mic_loc = $('#optional_inputs textarea[name="mic_loc"]').val();
+      show.lineage = $('#optional_inputs textarea[name="lineage"]').val();
+      show.notes = $('#optional_inputs textarea[name="notes"]').val();
+    }
     
     //check individual songs
     $('.set', '#show').each(function(index) {
@@ -164,7 +185,6 @@
         }
         else
           show.songs.push(new songObj($(this).attr('id'), $(".song_name_input", this).val(), 'temp', 's0e', 'sn', 's', 'ai', '/opt/lampp/htdocs/Setr.us/music_directory/' + show.artist_abb + '/' + show.id + $(this).attr('id') + '.mp3', 'rt'));
-          //songObj(id, title, artist, set_or_encore, set_num, song_num, segue, add_info, runtime)
           song_filename_pairings += '{"current_file_name": "' + $('.filename', this).text() + '", "new_file_name": "' + show.id + $(this).attr('id') + '.mp3' + '"},';
       });
     });
@@ -197,7 +217,7 @@
       /**/
       //validate
       if(is_valid()){
-        alert('valid');
+        /******NEED TO RETRIEVE NON-REQUIRED INFO*******/
         //call create_directory
         if(create_directory()){
           alert('returned from create dir');

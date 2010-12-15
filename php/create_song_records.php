@@ -10,12 +10,12 @@ error_reporting(E_ALL | E_STRICT);
 
 require('../config/db_login.php');
 
-$showJSON = $_POST['showJSON'];
+//$showJSON = $_POST['showJSON'];
+$showJSON = json_decode($_POST['showJSON'], true);
 
-$show = json_decode($showJSON, true);
-//echo $show["show"]["songs"];
+//$show = json_decode($showJSON, true);
+$show = $showJSON["show"];
 $songs = $show["show"]["songs"];
-//echo $songs;
 /*
 $showId = $_POST['showId'];
 $artist = $_POST['artist'];
@@ -38,8 +38,10 @@ $error = false;
 //connect to database
 $con = mysql_connect($db_host, $db_username, $db_pass);
 
-if (!$con)
+if (!$con){
+  $error = true;
   die('Could not connect: ' . mysql_error());
+}
 
 mysql_select_db($db_database, $con);
 //end connecting to database
@@ -47,19 +49,19 @@ mysql_select_db($db_database, $con);
 //loop through
 foreach ($songs as $song){
   //and create record
-  //add show information to database
   
   echo "<br />";
   echo "song id = ".$song["song"]["id"]." song name = ".$song["song"]["title"];
   //$sql= "INSERT INTO songs (unique_song_id, file_location, artist, date, city, state, name, set_num, set_position, part_of_a_sugue, setOrEncore, notes)
-				//VALUES('$song[\"id\"]','$song[\"filepath\"]','$artist','$showDate','$city','$state','$songName','$setNum','$songNum', $partOfASeuge, '$setOrEncore', '$addInfo')";
-				
+				//VALUES('$song[\"id\"]','$song[\"filepath\"]','$artist','$show[\"date\"]','$show[\"city\"]','$show[\"state\"]','$song[\"song\"][\'title\']','$song[\"song\"][\"set_num\"]','$song[\"song\"][\"song_num\"]', $partOfASeuge, '$setOrEncore', ''$song[\"song\"][\"add_info\"]'')";
+	
+  /*			
   //check to see if the query went through
 	if (!mysql_query($sql,$con)){
 	  echo 0;
   	die('Error: ' . mysql_error());
   }
-  
+  */
 }
         
 mysql_close($con);//close mysql connection
