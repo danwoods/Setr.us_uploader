@@ -15,7 +15,7 @@ $showJSON = json_decode($_POST['showJSON'], true);
 
 //$show = json_decode($showJSON, true);
 $show = $showJSON["show"];
-$songs = $show["show"]["songs"];
+$songs = $show["songs"];
 /*
 $showId = $_POST['showId'];
 $artist = $_POST['artist'];

@@ -16,7 +16,7 @@
   <script type="text/javascript" src="js/libs/jQuery/jquery-ui-1.7.2.custom.min.js"></script>
   <script type="text/javascript" src="js/libs/qtip/jquery.qtip-1.0.0-rc3.min.js"></script>
   <!--<script type="text/javascript" src="js/libs/json2.js"></script>-->
-  <link rel=StyleSheet href="css/jquery-ui-1.7.2.custom.css" type="text/css" media="screen">
+  <link rel=StyleSheet href="css/redmond/jquery-ui-1.7.2.custom.css" type="text/css" media="screen">
   <link rel=StyleSheet href="css/uploaderFrontEnd.css" type="text/css" media="screen">
   <script type="text/javascript" src="uploadify/swfobject.js"></script>
   <script type="text/javascript" src="uploadify/jquery.uploadify.v2.1.4.min.js"></script>
@@ -40,7 +40,6 @@
                               '{"id": "' + this.id + '", ' +
                               '"title": "' + this.title + '", ' +
                               '"artist": "' + this.artist + '", ' +
-                              '"artist": "' + this.artist + '", ' +
                               '"set_or_encore": "' + this.set_or_encore + '", ' +
                               '"set_num": "' + this.set_num + '", ' +
                               '"song_num": "' + this.song_num + '", ' +
@@ -51,7 +50,7 @@
                   };
     }
     
-  function showObj(artist_abb, year, month, day, city, state, venue, uploader){
+  function showObj(artist_abb, year, month, day, city, state){
     this.artist = (typeof artist == "undefined") ? "" : artist;
     this.artist_abb = (typeof artist_abb == "undefined") ? "" : artist_abb;
     this.year = (typeof year == "undefined") ? "" : year;
@@ -60,7 +59,7 @@
     this.date = this.year + '-'+ this.month + '-' + this.day;
     this.city = (typeof city == "undefined") ? "" : city;
     this.state = (typeof state == "undefined") ? "" : state;
-    this.venue = (typeof venue == "undefined") ? "" : venue;
+    this.venue = "";
     this.num_of_sets = "";
     this.num_of_encores = "";
     this.taper = "";
@@ -69,7 +68,7 @@
     this.lineage = "";
     this.mic_loc = "";
     this.notes = "";
-    this.uploader = (typeof uploader == "undefined") ? "test user" : uploader;
+    this.uploader = "";
     this.xml = "";//function(){};
     this.html = "";//function(){};
     this.id = artist_abb + year + '-' + ((month<10)? ('0' + month) : month) + '-' + ((day<10)? ('0' + day) : day);
@@ -92,7 +91,7 @@
                                   '"mic_loc": "' + this.mic_loc + '", ' +
                                   '"num_of_sets": "' + this.num_of_sets + '", ' +
                                   '"num_of_encores": "' + this.num_of_encores + '", ' +
-                                  '"add_info": "' + this.add_info + '", ' +
+                                  '"notes": "' + this.notes + '", ' +
                                   '"xml": "' + this.xml + '", ' +
                                   '"html": "' + this.html + '", ' +
                                   '"uploader": "' + this.uploader + '", ' +
@@ -125,6 +124,7 @@
     /*Initial validation*/
     //pull required show information
     var band_abb = $("#required_inputs .artist_input option:selected").val();
+    var artist = $("#required_inputs .artist_input option:selected").text();
     
     var year = $(":input[name=year]").val();
     var month = $(":input[name=month]").val();
@@ -163,16 +163,18 @@
     //if all of the above are true, create a new show object,
     //and retrive any optional show information
     else{
-      show = new showObj(band_abb, year, month, day, city, state, venue);
+      show = new showObj(band_abb, year, month, day, city, state);
       
       //optional info
       show.venue = venue;
+      show.artist = artist;
       show.taper = $('#optional_inputs input[name="taper"]').val();
       show.transfered_by = $('#optional_inputs input[name="transfered_by"]').val();
       show.source = $('#optional_inputs textarea[name="source"]').val();
       show.mic_loc = $('#optional_inputs textarea[name="mic_loc"]').val();
       show.lineage = $('#optional_inputs textarea[name="lineage"]').val();
-      show.notes = $('#optional_inputs textarea[name="notes"]').val();
+      show.notes = (typeof $('#optional_inputs textarea[name="notes"]').val() == "undefined") ? "" : $('#optional_inputs textarea[name="notes"]').val();
+      show.uploader = "NEED TO PULL UPLOADER FROM PHP";
     }
     
     //check individual songs
@@ -183,9 +185,20 @@
           error_msg += "Set " + setNum + " song " + (index + 1) + " missing name<br />";
           error = true;
         }
-        else
-          show.songs.push(new songObj($(this).attr('id'), $(".song_name_input", this).val(), 'temp', 's0e', 'sn', 's', 'ai', '/opt/lampp/htdocs/Setr.us/music_directory/' + show.artist_abb + '/' + show.id + $(this).attr('id') + '.mp3', 'rt'));
+        else{
+          //pull song information
+          var id = show.id + $(this).attr('id');
+          var title = $(".song_name_input", this).val();
+          var artist = $("#required_inputs .artist_input option:selected").text();
+          var set_or_encore = 'set'; //this needs to be checked
+          var set_num = '1'; //this needs to be checked
+          var song_num = '1'; //this needs to be checked
+          var segue = ($(".segue_indic", this).hasClass("segue")) ? 1 : 0;
+          var add_info = $('.add_info_input', this).val();
+          show.songs.push(new songObj(id, title, artist, set_or_encore, set_num, song_num, segue, add_info, '/opt/lampp/htdocs/Setr.us/music_directory/' + show.artist_abb + '/' + show.id + $(this).attr('id') + '.mp3', 'rt'));
+          
           song_filename_pairings += '{"current_file_name": "' + $('.filename', this).text() + '", "new_file_name": "' + show.id + $(this).attr('id') + '.mp3' + '"},';
+        }
       });
     });
     
