@@ -7,8 +7,8 @@ ToDo:
   - UI
     - Fix tabbing
     - Song add. info should offer auto-suggest and check boxes, ie:text, w/special guest [checkbox], special guest [text input])
-    - Fix broken image links
     - Fix alignments in css
+    - "file input" field in song div needs different structure to match alignment of left side
     - Create new "add files" button
   - POLISH
     - Cleanout php

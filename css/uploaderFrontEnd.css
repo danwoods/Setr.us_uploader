@@ -92,7 +92,7 @@ iframe {
     }
     
     .set, .encore {
-      width: 590px;
+      width: 577px;
       /*"overflow: hidden" allows for auto-vertical expansion*/
 		  overflow: hidden;
 		  border-style:solid;
@@ -119,12 +119,15 @@ iframe {
     .song {
       position: relative;
       margin-top: 5px;      
-      left: 10px;
-      width: 550px;
+      top: 5px;
+      left: 5px;
+      width: 565px;
 		  height: 125px;
       background: #7fbb11;
-      /*TEXTURE FOR GRABBING*/
-      background-image:url('paper.gif');
+      background-image:url('../images/grab_texture.png');
+      background-repeat: no-repeat;
+      background-position: 5px 23px;
+      list-style-type:none; 
       
       -webkit-border-radius: 24px;
       
@@ -134,7 +137,7 @@ iframe {
 		.song_name_div {
 		  float: left;
 		  margin-top: 10px;
-		  margin-left: 10px;
+		  margin-left: 25px;
 		  width: 250px;
 		  height: 60px;
 		  background: #a2d164;
@@ -190,6 +193,11 @@ iframe {
 		  color: #F2EFE9;
 		  font-family: Verdana, sans-serif;
 		  font-size: 14px;
+    }
+    
+    .filename {
+      margin-top: 5px;
+      margin-left: 7px;
     }
     
     .segue_indic {
