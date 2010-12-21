@@ -115,7 +115,7 @@
     }
     
   function createDropZone(){
-    var dropZone = $('<div class="song_element_placeholder" style="height:125px; border-style: dashed;"></div>')
+    var dropZone = $('<div class="song_element_placeholder" style="height:125px; border-style: dashed; margin: 5px;"></div>')
                      .droppable({ tolerance: 'pointer' })
                      .bind('drop', function(event, ui) {
                        $(ui.draggable).insertAfter(this);
@@ -760,51 +760,13 @@
       'onSelect'     : function(event,ID,fileObj) {
                          var new_song = new songObj();
                          songs.push(new_song);
-                         var new_song_element = $(createNewSongElm(fileObj, ID)).draggable({ cursor: 'url(images/closedhand.cur), move', zIndex: 2700, stack: ".song" })
-                                                                                 .droppable({ tolerance: 'touch' })
-                                                                                 .bind('select',function () {
-                                                                                   return false; 
-                                                                                 })
-                                                                                 .bind('drop', function(event, ui) {
-                                                                                   $('.song_element_placeholder').slideUp("slow");
-                                                                                   $('.song_element_placeholder').remove();
-                                                                                   $(ui.draggable).insertAfter(this);
-                                                                                   refresh();
-                                                                                 })
-                                                                                 .bind('dragstop', function(event, ui) {
-                                                                                    $(this).css({
-                                                                                      position: "relative",
-                                                                                      top: "5px",      
-                                                                                      left: "5px"
-                                                                                    });                                                                                
-                                                                                    
-                                                                                    //need to re-size set container
-                                                                                    var height = ($(this).siblings().length + 1) * 155;
-                                                                                    $(this).parents('.set').css("height", height);
-                                                                                     
-                                                                                 })
-                                                                                 .bind('dropover', function(event, ui) {
-                                                                                    //alert(ui.position.top + ' ' + ui.position.left);
-                                                                                    $('.song_element_placeholder').slideUp("slow");
-                                                                                    $('.song_element_placeholder').remove();
-                                                                                    
-                                                                                    if(ui.position.top > 0){
-                                                                                      var top = true;
-                                                                                      $(createDropZone()).insertBefore(this);
-                                                                                    }
-                                                                                    else{  
-                                                                                      var top = false;
-                                                                                      $(createDropZone()).insertAfter(this);
-                                                                                    }
-                                                                                    $('.song_element_placeholder').slideDown("slow");
-                                                                                  })
-                                                                                  .bind('dropout', function(event, ui) {
-                                                                                    
-                                                                                  });
+                         
+                         var new_song_element = $(createNewSongElm(fileObj, ID));
                          $('#set1 .songs').append(new_song_element);
                          
                          refresh();
                        },
+      'onSelectOnce'  : function(event,data) {alert('done');$('.songs').sortable().disableSelection();},
       'onAllComplete' : function(event,data) {
                           alert("All uploads complete");
                           if(rename_files()){
