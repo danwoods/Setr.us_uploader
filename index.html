@@ -114,6 +114,132 @@
                   }
     }
     
+  function createDropZone(){
+    var dropZone = $('<div class="song_element_placeholder" style="height:125px; border: 5px; background-color: red;"></div>')
+                     .droppable({ tolerance: 'pointer' })
+                     .bind('drop', function(event, ui) {
+                       $(ui.draggable).insertAfter(this);
+                       $(this).remove();
+                       refresh();
+                     });
+                    
+    return dropZone;
+  }
+  
+  function refresh(){
+      $('.set').each(function(index){
+        
+        var setNum = index + 1;
+                  
+        $(this).attr('id', 'set' + setNum);
+        
+        $('h2', this).text('Set ' + setNum);
+        
+        //iterate through current set's songs
+        $('.song', this).each(function(index){
+          if(setNum < 10)
+            setId = "0" + setNum;
+          else
+            var setId = setNum;
+          
+          var songNum = index + 1;
+          if(songNum < 10)
+            $(this).attr('id', 's' + setId + 's0' + songNum);
+          else
+            $(this).attr('id', 's' + setId + 's' + songNum);
+        });
+      });
+      
+      //now check encores
+      $('.encore').each(function(index){
+        var encoreNum = index + 1;
+        $(this).attr('id', 'encore' + encoreNum);
+        if(encoreNum > 1)
+		      $('h2', this).text("Encore (" + encoreNum + ")");
+        else
+          $('h2', this).text("Encore");
+        //iterate through current set's songs
+        $('.song', this).each(function(index){
+          var songNum = index + 1;
+          if(songNum < 10)
+            $(this).attr('id', 'e' + encoreNum + 's0' + songNum);
+          else
+            $(this).attr('id', 'e' + encoreNum + 's' + songNum);
+        });
+      });
+    } 
+    
+  function createNewSongElm(fileObj, fileID){
+      
+      var songElm = $('<div id="s01s01" class="song ' + fileID + '">' +
+                        '<div class="song_name_div">' +
+                          '<h6>Song name:</h6>' +
+                          '<input type="text" name="s01s01_name" class="song_name_input" size="25" />' +
+                        '</div>' +
+                        '<div class="song_loc_div">' +
+                          '<h6>File location:<br /><span class="filename">' + fileObj.name + '</span></h6>' +
+                        '</div>' +
+                        '<img src="images/ul_segue_hollow.png" alt="segue?" class="segue_indic" />' +
+                        '<div class="addInfo">' +
+                          '<p>additional info:</p>' +
+                          '<textarea name="s1s01_addInfo" class="add_info_input opt" rows="1" cols="40"></textarea>' +
+                        '</div>' +
+                        '<p class="remove_song">remove song -</p>' +
+                      '</div>');
+		  
+		  //set remove song functionality
+		  $('p.remove_song', songElm).bind("click", function(){
+		    var numOfChild = $(this).parents('.set').children('.song').length;
+		    //make sure they're not creating an empty set
+		    if(numOfChild == 1)
+		      alert("Can't remove the only song from the set, try removing the set instead");
+        else
+		      $(this).parents('.song').fadeOut("slow", function() {
+          numOfSets--;
+          $(this).addClass('garbage').removeClass('song');
+          $(this).removeAttr('id');
+          $(this).remove(); 
+                
+          refresh();
+        });
+      });
+      
+      //set segue functionality
+      $('.segue_indic', songElm).bind("click", function(){
+        if($(this).hasClass("segue")){
+          $(this).removeClass("segue");
+          $(this).attr('src', 'images/ul_segue_hollow.png');
+        }
+        else{
+          $(this).addClass("segue");
+          $(this).attr('src', 'images/ul_segue_darkGreen.png');          
+        }
+      });
+      
+      //set segue tool-tip
+      $('.segue_indic', songElm).qtip({
+          content: "is this song a segue?",
+          position: {
+            corner: {
+              target: 'topMiddle',
+              tooltip: 'bottomLeft'
+            }
+          },
+          style: { 
+            tip: 'bottomLeft',
+            name: 'blue',
+            'font-size': 12 
+          },   
+          show: 'mouseover',
+          hide: {
+            when: 'mouseout',
+            fixed: true
+          }
+        }); //end creating tool tip
+      
+      return songElm;		  
+	 }
+    
   function is_valid(){
       
     //variables
@@ -629,36 +755,70 @@
       'auto'         : false,
       'multi'        : true,
       'queueID'      : 'upload_queue',
+      'buttonText'   : 'add songs +',
+      'buttonImg'    : 'images/add_songs_btn.png',
       'onSelect'     : function(event,ID,fileObj) {
                          var new_song = new songObj();
                          songs.push(new_song);
-                         var new_song_element = $(createNewSong(fileObj, ID)).draggable()
-                                                                             .droppable()
-                                                                             .bind( 'drop', function(event, ui) {
-                                                                               $('.song_element_placeholder').remove();
-                                                                               $(ui.draggable).insertBefore(this);
-                                                                               refresh();
-                                                                             })
-                                                                             .bind('dragstop', function(event, ui) {
-                                                                                $(this).css({
-                                                                                  position: "relative",
-                                                                                  top: "10px",      
-                                                                                  left: "5px"
-                                                                                });                                                                                
-                                                                                
-                                                                                //need to re-size set container
-                                                                                var height = ($(this).siblings().length + 1) * 155;
-                                                                                $(this).parents('.set').css("height", height);
-                                                                                 
-                                                                             })
-                                                                             .bind('dropover', function(event, ui) {
-                                                                                $('<div class="song_element_placeholder" style="height:125px;"></div>').insertBefore(this);
-                                                                                $('.song_element_placeholder').slideDown("slow");
-                                                                              })
-                                                                              .bind('dropout', function(event, ui) {
-                                                                                $('.song_element_placeholder').slideUp("slow");
-                                                                                $('.song_element_placeholder').remove();
-                                                                              });
+                         var new_song_element = $(createNewSongElm(fileObj, ID)).draggable({ cursor: 'url(images/closedhand.cur), move', zIndex: 2700, stack: ".song" })
+                                                                                 .droppable({ tolerance: 'pointer' })
+                                                                                 .bind('select',function () {
+                                                                                   return false; 
+                                                                                 })
+                                                                                 .bind('drop', function(event, ui) {
+                                                                                   $('.song_element_placeholder').slideUp("slow");
+                                                                                   $('.song_element_placeholder').remove();
+                                                                                   $(ui.draggable).insertAfter(this);
+                                                                                   refresh();
+                                                                                 })
+                                                                                 .bind('dragstop', function(event, ui) {
+                                                                                    $(this).css({
+                                                                                      position: "relative",
+                                                                                      top: "5px",      
+                                                                                      left: "5px"
+                                                                                    });                                                                                
+                                                                                    
+                                                                                    //need to re-size set container
+                                                                                    var height = ($(this).siblings().length + 1) * 155;
+                                                                                    $(this).parents('.set').css("height", height);
+                                                                                     
+                                                                                 })
+                                                                                 .bind('dropover', function(event, ui) {
+                                                                                    //alert(ui.position.top + ' ' + ui.position.left);
+                                                                                    $('.song_element_placeholder').slideUp("slow");
+                                                                                    $('.song_element_placeholder').remove();
+                                                                                    
+                                                                                    var init_entry_point = ui.position.top;
+                                                                                    
+                                                                                    if(init_entry_point > 0){
+                                                                                      var top = true;
+                                                                                      $(createDropZone()).insertBefore(this);
+                                                                                    }
+                                                                                    else{  
+                                                                                      var top = false;
+                                                                                      $(createDropZone()).insertAfter(this);
+                                                                                    }  
+                                                                                    $(document).mousemove(function(e){
+                                                                                      if(ui.position.top > 0 && !top){
+                                                                                          $('.song_element_placeholder').slideUp("slow");
+                                                                                          $('.song_element_placeholder').remove();
+                                                                                          
+                                                                                          top = true;
+                                                                                          $(createDropZone()).insertBefore(this);
+                                                                                      }
+                                                                                      else if(ui.position.top < 0 && top){
+                                                                                        $('.song_element_placeholder').slideUp("slow");
+                                                                                        $('.song_element_placeholder').remove();
+                                                                                          
+                                                                                        top = false;
+                                                                                        $(createDropZone()).insertBefore(this);
+                                                                                      }
+                                                                                    }); 
+                                                                                    $('.song_element_placeholder').slideDown("slow");
+                                                                                  })
+                                                                                  .bind('dropout', function(event, ui) {
+                                                                                    
+                                                                                  });
                          $('#set1 .songs').append(new_song_element);
                          
                          refresh();
@@ -804,7 +964,19 @@
 		/*add set functionality*/
 		$('p.add_set').bind("click",function() {
 		  //clone first set
-		  var setElmClone = $('#set1').clone();
+		  var setElmClone = $('<div class="set">' +
+                            '<h2></h2>' +
+                            '<div class="songs"></div>' +
+                            '<p class="remove_set">remove set -</p>' +
+                            '</div>').droppable({ tolerance: 'pointer' })
+                                     .bind('drop', function(event, ui){
+                                       alert('dropped on set');
+                                       $(this).children('.songs').append(ui.draggable);
+                                       refresh();
+                                     })
+                                     .bind('dropover', function(event, ui){
+                                       //should resize to fit hovering songs
+                                     });
 		  //increment numOfSets then set set id
 		  numOfSets++;
 		  $(setElmClone).attr('id', 'set' + numOfSets);
@@ -1225,80 +1397,10 @@
     });
     
     
-    function createNewSong(fileObj, fileID){
-      
-      var songElm = $('<div id="s01s01" class="song ' + fileID + '">' +
-                        '<div class="song_name_div">' +
-                          '<h6>Song name:</h6>' +
-                          '<input type="text" name="s01s01_name" class="song_name_input" size="25" />' +
-                        '</div>' +
-                        '<div class="song_loc_div">' +
-                          '<h6>File location:<br /><span class="filename">' + fileObj.name + '</span></h6>' +
-                        '</div>' +
-                        '<img src="images/ul_segue_hollow.png" alt="segue?" class="segue_indic" />' +
-                        '<div class="addInfo">' +
-                          '<p>additional info:</p>' +
-                          '<textarea name="s1s01_addInfo" class="add_info_input opt" rows="1" cols="40"></textarea>' +
-                        '</div>' +
-                        '<p class="remove_song">remove song -</p>' +
-                      '</div>');
-		  
-		  //set remove song functionality
-		  $('p.remove_song', songElm).bind("click", function(){
-		    var numOfChild = $(this).parents('.set').children('.song').length;
-		    //make sure they're not creating an empty set
-		    if(numOfChild == 1)
-		      alert("Can't remove the only song from the set, try removing the set instead");
-        else
-		      $(this).parents('.song').fadeOut("slow", function() {
-          numOfSets--;
-          $(this).addClass('garbage').removeClass('song');
-          $(this).removeAttr('id');
-          $(this).remove(); 
-                
-          refresh();
-        });
-      });
-      
-      //set segue functionality
-      $('.segue_indic', songElm).bind("click", function(){
-        if($(this).hasClass("segue")){
-          $(this).removeClass("segue");
-          $(this).attr('src', 'images/ul_segue_hollow.png');
-        }
-        else{
-          $(this).addClass("segue");
-          $(this).attr('src', 'images/ul_segue_darkGreen.png');          
-        }
-      });
-      
-      //set segue tool-tip
-      $('.segue_indic', songElm).qtip({
-          content: "is this song a segue?",
-          position: {
-            corner: {
-              target: 'topMiddle',
-              tooltip: 'bottomLeft'
-            }
-          },
-          style: { 
-            tip: 'bottomLeft',
-            name: 'blue',
-            'font-size': 12 
-          },   
-          show: 'mouseover',
-          hide: {
-            when: 'mouseout',
-            fixed: true
-          }
-        }); //end creating tool tip
-      
-      return songElm;		  
-	 }
+    
     
     
     function addSong(set){
-      alert("hit add song");
       
       //clone the original song element
 		  var songElmClone = $('#s01s01').clone();
@@ -1376,49 +1478,6 @@
 
 		  refresh();		  
 	 }
-    
-    function refresh(){
-      $('.set').each(function(index){
-        
-        var setNum = index + 1;
-                  
-        $(this).attr('id', 'set' + setNum);
-        
-        $('h2', this).text('Set ' + setNum);
-        
-        //iterate through current set's songs
-        $('.song', this).each(function(index){
-          if(setNum < 10)
-            setId = "0" + setNum;
-          else
-            var setId = setNum;
-          
-          var songNum = index + 1;
-          if(songNum < 10)
-            $(this).attr('id', 's' + setId + 's0' + songNum);
-          else
-            $(this).attr('id', 's' + setId + 's' + songNum);
-        });
-      });
-      
-      //now check encores
-      $('.encore').each(function(index){
-        var encoreNum = index + 1;
-        $(this).attr('id', 'encore' + encoreNum);
-        if(encoreNum > 1)
-		      $('h2', this).text("Encore (" + encoreNum + ")");
-        else
-          $('h2', this).text("Encore");
-        //iterate through current set's songs
-        $('.song', this).each(function(index){
-          var songNum = index + 1;
-          if(songNum < 10)
-            $(this).attr('id', 'e' + encoreNum + 's0' + songNum);
-          else
-            $(this).attr('id', 'e' + encoreNum + 's' + songNum);
-        });
-      });
-    }    
 		
 		function check_done(origElm_id, form_id){
 
