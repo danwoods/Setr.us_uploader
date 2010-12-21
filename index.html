@@ -115,7 +115,7 @@
     }
     
   function createDropZone(){
-    var dropZone = $('<div class="song_element_placeholder" style="height:125px; border: 5px; background-color: red;"></div>')
+    var dropZone = $('<div class="song_element_placeholder" style="height:125px; border-style: dashed;"></div>')
                      .droppable({ tolerance: 'pointer' })
                      .bind('drop', function(event, ui) {
                        $(ui.draggable).insertAfter(this);
@@ -761,7 +761,7 @@
                          var new_song = new songObj();
                          songs.push(new_song);
                          var new_song_element = $(createNewSongElm(fileObj, ID)).draggable({ cursor: 'url(images/closedhand.cur), move', zIndex: 2700, stack: ".song" })
-                                                                                 .droppable({ tolerance: 'pointer' })
+                                                                                 .droppable({ tolerance: 'touch' })
                                                                                  .bind('select',function () {
                                                                                    return false; 
                                                                                  })
@@ -788,32 +788,14 @@
                                                                                     $('.song_element_placeholder').slideUp("slow");
                                                                                     $('.song_element_placeholder').remove();
                                                                                     
-                                                                                    var init_entry_point = ui.position.top;
-                                                                                    
-                                                                                    if(init_entry_point > 0){
+                                                                                    if(ui.position.top > 0){
                                                                                       var top = true;
                                                                                       $(createDropZone()).insertBefore(this);
                                                                                     }
                                                                                     else{  
                                                                                       var top = false;
                                                                                       $(createDropZone()).insertAfter(this);
-                                                                                    }  
-                                                                                    $(document).mousemove(function(e){
-                                                                                      if(ui.position.top > 0 && !top){
-                                                                                          $('.song_element_placeholder').slideUp("slow");
-                                                                                          $('.song_element_placeholder').remove();
-                                                                                          
-                                                                                          top = true;
-                                                                                          $(createDropZone()).insertBefore(this);
-                                                                                      }
-                                                                                      else if(ui.position.top < 0 && top){
-                                                                                        $('.song_element_placeholder').slideUp("slow");
-                                                                                        $('.song_element_placeholder').remove();
-                                                                                          
-                                                                                        top = false;
-                                                                                        $(createDropZone()).insertBefore(this);
-                                                                                      }
-                                                                                    }); 
+                                                                                    }
                                                                                     $('.song_element_placeholder').slideDown("slow");
                                                                                   })
                                                                                   .bind('dropout', function(event, ui) {
