@@ -69,7 +69,7 @@
     this.mic_loc = "";
     this.notes = "";
     this.uploader = "";
-    this.xml = "";//function(){};
+    this.toXML = "";//function(){};
     this.html = "";//function(){};
     this.id = artist_abb + year + '-' + ((month<10)? ('0' + month) : month) + '-' + ((day<10)? ('0' + day) : day);
     this.songs = new Array();
@@ -92,11 +92,11 @@
                                   '"num_of_sets": "' + this.num_of_sets + '", ' +
                                   '"num_of_encores": "' + this.num_of_encores + '", ' +
                                   '"notes": "' + this.notes + '", ' +
-                                  '"xml": "' + this.xml + '", ' +
+                                  '"xml": "' + this.toXML + '", ' +
                                   '"html": "' + this.html + '", ' +
                                   '"uploader": "' + this.uploader + '", ' +
                                   '"songs": [ ';
-                    //add in songs
+                    //add songs
                     for(i=0; i<this.songs.length; i++){
                       json += this.songs[i].toJSON();
                       if(i < this.songs.length-1)
@@ -114,18 +114,6 @@
                   }
     }
     
-  function createDropZone(){
-    var dropZone = $('<div class="song_element_placeholder" style="height:125px; border-style: dashed; margin: 5px;"></div>')
-                     .droppable({ tolerance: 'pointer' })
-                     .bind('drop', function(event, ui) {
-                       $(ui.draggable).insertAfter(this);
-                       $(this).remove();
-                       refresh();
-                     });
-                    
-    return dropZone;
-  }
-  
   function refresh(){
       $('.set').each(function(index){
         
@@ -239,6 +227,8 @@
       
       return songElm;		  
 	 }
+  
+  function createNewSetElm(){}
     
   function is_valid(){
       
@@ -766,7 +756,7 @@
                          
                          refresh();
                        },
-      'onSelectOnce'  : function(event,data) {alert('done');$('.songs').sortable().disableSelection();},
+      'onSelectOnce'  : function(event,data) {$('.songs').sortable({placeholder: "song_dropzone", connectWith: '.songs'}).disableSelection();},
       'onAllComplete' : function(event,data) {
                           alert("All uploads complete");
                           if(rename_files()){
@@ -909,18 +899,37 @@
 		$('p.add_set').bind("click",function() {
 		  //clone first set
 		  var setElmClone = $('<div class="set">' +
-                            '<h2></h2>' +
-                            '<div class="songs"></div>' +
-                            '<p class="remove_set">remove set -</p>' +
-                            '</div>').droppable({ tolerance: 'pointer' })
-                                     .bind('drop', function(event, ui){
-                                       alert('dropped on set');
-                                       $(this).children('.songs').append(ui.draggable);
-                                       refresh();
-                                     })
-                                     .bind('dropover', function(event, ui){
-                                       //should resize to fit hovering songs
-                                     });
+                          '<h2></h2>' +
+                          '<div class="songs" style="height:5px"></div>' +
+                          '<p class="remove_set">remove set -</p>' +
+                          '</div>');
+                                     
+      //make '.songs' sortable
+      $(setElmClone).children('.songs').sortable({
+                                          placeholder: "song_dropzone",
+                                          connectWith: '.songs',
+                                          receive: function(event, ui) {
+                                            //resize set element
+                                            var height = (($(this).children().length) * 130) + 65;
+                                            $(this).parent('.set').css('height', height);
+                                            $(this).css('height', height-125);
+                                          },
+                                          remove: function(event, ui) {
+                                            var height = (($(this).children().length) * 130) + 65;
+                                            $(this).parent('.set').css('height', height);
+                                          },
+                                          over: function(event, ui) {
+                                            var height = (($(this).children().length + 1) * 130) + 65;
+                                            $(this).parent('.set').css('height', height);
+                                          },
+                                          out: function(event, ui) {
+                                            var height = (($(this).children().length) * 130) + 65;
+                                            $(this).parent('.set').css('height', height);
+                                          }
+                                                                                          
+                                        })
+                                        .disableSelection();
+      
 		  //increment numOfSets then set set id
 		  numOfSets++;
 		  $(setElmClone).attr('id', 'set' + numOfSets);
@@ -954,6 +963,7 @@
 		  
 		  //reveal new set
 		  $(setElmClone).fadeIn("slow");
+      
     });
     
     /*add encore functionality*/
