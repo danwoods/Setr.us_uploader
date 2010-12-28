@@ -36,11 +36,14 @@
     this.runtime = (typeof runtime == "undefined") ? "" : runtime;
     this.filepath = (typeof filepath == "undefined") ? "" : filepath;
     this.toXML = function(){
-      return "<song id='" + this.id + "' partOfASeuge='" + (this.segue)?'1':'0' + "' >" +
-               "<song_name>" + this.title + "</song_name>" +
+      var xml = "<song id='" + this.id + "' partOfASeuge='";
+      xml += (this.segue)?'1':'0';
+      xml += "' >";
+      xml += "<song_name>" + this.title + "</song_name>" +
                "<song_addInfo>" + this.add_info + "</song_addInfo>" +
              "</song>";
       
+      return xml;
       };
     this.toJSON = function(){
                      return '{"song":  ' +
@@ -67,13 +70,18 @@
       if(this.set_or_encore == 'set')
         var xml = "<" + this.set_or_encore + " id='" + this.id + "' >";
         
-        //loop through songs
-        $.each(this.songs, function(index, song){
-          xml += song.toXML();
-          });
+      //add songs
+      var i = 0;
+      while(i<this.songs.length){
+        xml += this.songs[i].toXML();
+        i++;
+      }
         
       xml += "</" + this.set_or_encore + ">";
+      
+      return xml;
       };
+      
     this.toJSON = function(){
       var json = '{"set": ' +
                       '{"id": "' + this.id + '", ' +
@@ -133,10 +141,12 @@
                   "<city>" + this.city + "</city>" + 
                   "<state>" + this.state + "</state>" +
                   "</location>";
-      //loop through sets
-      $.each(this.sets, function(index, set){
-        xml += set.toXML();
-        });
+      //add sets
+        var i = 0;
+        while(i<this.sets.length){
+          xml += this.sets[i].toXML();
+          i++;
+        }
         
       //finish xml
       xml += "</show>";
@@ -168,7 +178,6 @@
                                   '"uploader": "' + this.uploader + '", ' +
                                   '"sets": [ ';
         //add sets
-        alert('There are ' + this.sets.length + ' in this show');
         var i = 0;
         while(i<this.sets.length){
           json += this.sets[i].toJSON();
@@ -177,16 +186,6 @@
           i++;
           }
         
-        /*
-        for(i=0; i<this.sets.length; i++){
-          alert('i = ' +i);
-          json += this.sets[i].toJSON();
-          alert('i = ' +i);
-          if(i < (this.sets.length-1))
-            json += ', ';
-          alert('i = ' +i);
-          }
-        */
         //finish sets
         json += ']}';
         
@@ -377,15 +376,13 @@
       show.notes = (typeof $('#optional_inputs textarea[name="notes"]').val() == "undefined") ? "" : $('#optional_inputs textarea[name="notes"]').val();
       show.uploader = "NEED TO PULL UPLOADER FROM PHP";
     }
-    alert($('.set', '#show').length + " sets in show");
+    
     //check individual songs
     $('.set', '#show').each(function(index) {
       //create setObj
-      var set_num = (index + 1);   
-      
-      //setObj(id, set_num, set_or_encore, add_onfo)
+      var set_num = (index + 1);      
       var set = new setObj(show.id + 's' + set_num, set_num, 'set', '');
-      alert('just created, and now adding to, set ' + set_num);
+      
       $('.song', this).each(function(index) {
         if($(".song_name_input", this).val() == "") {
           error_msg += "Set " + set_num + " song " + (index + 1) + " missing name<br />";
@@ -406,9 +403,10 @@
           song_filename_pairings += '{"current_file_name": "' + $('.filename', this).text() + '", "new_file_name": "' + show.id + $(this).attr('id') + '.mp3' + '"},';
         }
       });
-      alert('adding set to show. Currently ' + show.sets.length + ' sets in show');
+      
+      //add set to show
       show.sets.push(set);
-      alert('returned from adding set to show. Currently ' + show.sets.length + ' sets in show')
+      
     });
     
     //if an error is found alert uploader then return to system
@@ -436,15 +434,13 @@
   }
     
   function prep_for_upload(){
-      /**/
       //validate
       if(is_valid()){
-        /******NEED TO RETRIEVE NON-REQUIRED INFO*******/
         //call create_directory
         if(create_directory()){
           alert('returned from create dir');
           $('#file_upload').uploadifySettings('folder','../../Setr.us/music_directory/' + show.artist_abb + '/' + show.id);
-          //upload all songs
+          //upload all songs -> rest of proccess is handled by uploader callback
           $('#file_upload').uploadifyUpload();
         }
         else
