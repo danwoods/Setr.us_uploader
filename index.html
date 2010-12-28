@@ -35,6 +35,13 @@
     this.add_info = (typeof add_info == "undefined") ? "" : add_info;
     this.runtime = (typeof runtime == "undefined") ? "" : runtime;
     this.filepath = (typeof filepath == "undefined") ? "" : filepath;
+    this.toXML = function(){
+      return "<song id='" + this.id + "' partOfASeuge='" + (this.segue)?'1':'0' + "' >" +
+               "<song_name>" + this.title + "</song_name>" +
+               "<song_addInfo>" + this.add_info + "</song_addInfo>" +
+             "</song>";
+      
+      };
     this.toJSON = function(){
                      return '{"song":  ' +
                               '{"id": "' + this.id + '", ' +
@@ -50,6 +57,48 @@
                   };
     }
     
+  function setObj(id, set_num, set_or_encore, add_onfo){
+    this.id = id;
+    this.set_num = set_num;
+    this.set_or_encore = set_or_encore;
+    this.add_info = (typeof add_info == "undefined") ? "" : add_info;
+    this.songs = new Array();
+    this.toXML = function(){
+      if(this.set_or_encore == 'set')
+        var xml = "<" + this.set_or_encore + " id='" + this.id + "' >";
+        
+        //loop through songs
+        $.each(this.songs, function(index, song){
+          xml += song.toXML();
+          });
+        
+      xml += "</" + this.set_or_encore + ">";
+      };
+    this.toJSON = function(){
+      var json = '{"set": ' +
+                      '{"id": "' + this.id + '", ' +
+                      '"set_num": "' + this.set_num + '", ' +
+                      '"set_or_encore": "' + this.set_or_encore + '", ' +
+                      '"add_info": "' + this.add_info + '", ' +
+                      '"songs": [ ';
+                      
+      //add songs
+      for(i=0; i<this.songs.length; i++){
+        json += this.songs[i].toJSON();
+        if(i < this.songs.length-1)
+          json += ', ';
+        }
+                    
+      //finish songs
+      json += ']}';
+      
+      //finish json
+      json += '}'; 
+      
+      return json;
+      };
+    }
+  
   function showObj(artist_abb, year, month, day, city, state){
     this.artist = (typeof artist == "undefined") ? "" : artist;
     this.artist_abb = (typeof artist_abb == "undefined") ? "" : artist_abb;
@@ -69,10 +118,32 @@
     this.mic_loc = "";
     this.notes = "";
     this.uploader = "";
-    this.toXML = "";//function(){};
-    this.html = "";//function(){};
+    this.sets = new Array();
     this.id = artist_abb + year + '-' + ((month<10)? ('0' + month) : month) + '-' + ((day<10)? ('0' + day) : day);
-    this.songs = new Array();
+    this.toXML = function(){
+      var xml = "<?xml version=\\\"1.0\\\" encoding=\\\"ISO-8859-1\\\"?>" +
+                "<show id='" + this.id + "' >" +
+                  "<artist abb='" + this.artist_abb + "'>" + this.artist + "</artist>" +
+                  "<date>" +
+                    "<year>" + this.year + "</year>" +
+                    "<month>" + ((month<10)? ('0' + month) : month) + "</month>" +
+                    "<day>" + + ((day<10)? ('0' + day) : day) + + "</day>" +
+                  "</date>" +
+                  "<location>" +
+                  "<city>" + this.city + "</city>" + 
+                  "<state>" + this.state + "</state>" +
+                  "</location>";
+      //loop through sets
+      $.each(this.sets, function(index, set){
+        xml += set.toXML();
+        });
+        
+      //finish xml
+      xml += "</show>";
+      
+      return xml;
+      };
+          
     this.toJSON = function(){
                     var json = '{"show": ' +
                                   '{"id": "' + this.id + '", ' +
@@ -89,73 +160,87 @@
                                   '"source": "' + this.source + '", ' +
                                   '"lineage": "' + this.lineage + '", ' +
                                   '"mic_loc": "' + this.mic_loc + '", ' +
-                                  '"num_of_sets": "' + this.num_of_sets + '", ' +
+                                  '"num_of_sets": "' + this.sets.length + '", ' +
                                   '"num_of_encores": "' + this.num_of_encores + '", ' +
                                   '"notes": "' + this.notes + '", ' +
-                                  '"xml": "' + this.toXML + '", ' +
+                                  '"xml": "' + this.toXML() + '", ' +
                                   '"html": "' + this.html + '", ' +
                                   '"uploader": "' + this.uploader + '", ' +
-                                  '"songs": [ ';
-                    //add songs
-                    for(i=0; i<this.songs.length; i++){
-                      json += this.songs[i].toJSON();
-                      if(i < this.songs.length-1)
-                        json += ', ';
-                      }
-                                  
-                    //finish songs
-                    json += ']}';
-                    
-                    //finish json
-                    json += '}'; 
-                    
-                    return json; 
-                    
-                  }
+                                  '"sets": [ ';
+        //add sets
+        alert('There are ' + this.sets.length + ' in this show');
+        var i = 0;
+        while(i<this.sets.length){
+          json += this.sets[i].toJSON();
+          if(i < (this.sets.length-1))
+            json += ', ';
+          i++;
+          }
+        
+        /*
+        for(i=0; i<this.sets.length; i++){
+          alert('i = ' +i);
+          json += this.sets[i].toJSON();
+          alert('i = ' +i);
+          if(i < (this.sets.length-1))
+            json += ', ';
+          alert('i = ' +i);
+          }
+        */
+        //finish sets
+        json += ']}';
+        
+        //finish json
+        json += '}'; 
+        
+        return json; 
+        
+      }
     }
     
   function refresh(){
-      $('.set').each(function(index){
-        
-        var setNum = index + 1;
-                  
-        $(this).attr('id', 'set' + setNum);
-        
-        $('h2', this).text('Set ' + setNum);
-        
-        //iterate through current set's songs
-        $('.song', this).each(function(index){
-          if(setNum < 10)
-            setId = "0" + setNum;
-          else
-            var setId = setNum;
-          
-          var songNum = index + 1;
-          if(songNum < 10)
-            $(this).attr('id', 's' + setId + 's0' + songNum);
-          else
-            $(this).attr('id', 's' + setId + 's' + songNum);
-        });
-      });
+
+    $('.set').each(function(index){
       
-      //now check encores
-      $('.encore').each(function(index){
-        var encoreNum = index + 1;
-        $(this).attr('id', 'encore' + encoreNum);
-        if(encoreNum > 1)
-		      $('h2', this).text("Encore (" + encoreNum + ")");
+      var setNum = index + 1;
+      
+      $(this).attr('id', 'set' + setNum);
+      
+      $('h2', this).text('Set ' + setNum);
+      
+      //iterate through current set's songs
+      $('.song', this).each(function(index){
+        if(setNum < 10)
+          setId = "0" + setNum;
         else
-          $('h2', this).text("Encore");
-        //iterate through current set's songs
-        $('.song', this).each(function(index){
-          var songNum = index + 1;
-          if(songNum < 10)
-            $(this).attr('id', 'e' + encoreNum + 's0' + songNum);
-          else
-            $(this).attr('id', 'e' + encoreNum + 's' + songNum);
-        });
+          var setId = setNum;
+        
+        var songNum = index + 1;
+        if(songNum < 10)
+          $(this).attr('id', 's' + setId + 's0' + songNum);
+        else
+          $(this).attr('id', 's' + setId + 's' + songNum);
       });
-    } 
+    });
+    
+    //now check encores
+    $('.encore').each(function(index){
+      var encoreNum = index + 1;
+      $(this).attr('id', 'encore' + encoreNum);
+      if(encoreNum > 1)
+        $('h2', this).text("Encore (" + encoreNum + ")");
+      else
+        $('h2', this).text("Encore");
+      //iterate through current set's songs
+      $('.song', this).each(function(index){
+        var songNum = index + 1;
+        if(songNum < 10)
+          $(this).attr('id', 'e' + encoreNum + 's0' + songNum);
+        else
+          $(this).attr('id', 'e' + encoreNum + 's' + songNum);
+      });
+    });
+  } 
     
   function createNewSongElm(fileObj, fileID){
       
@@ -228,7 +313,7 @@
       return songElm;		  
 	 }
   
-  function createNewSetElm(){}
+  //function createNewSetElm(){}
     
   function is_valid(){
       
@@ -292,13 +377,18 @@
       show.notes = (typeof $('#optional_inputs textarea[name="notes"]').val() == "undefined") ? "" : $('#optional_inputs textarea[name="notes"]').val();
       show.uploader = "NEED TO PULL UPLOADER FROM PHP";
     }
-    
+    alert($('.set', '#show').length + " sets in show");
     //check individual songs
     $('.set', '#show').each(function(index) {
-      var setNum = (index + 1);      
+      //create setObj
+      var set_num = (index + 1);   
+      
+      //setObj(id, set_num, set_or_encore, add_onfo)
+      var set = new setObj(show.id + 's' + set_num, set_num, 'set', '');
+      alert('just created, and now adding to, set ' + set_num);
       $('.song', this).each(function(index) {
         if($(".song_name_input", this).val() == "") {
-          error_msg += "Set " + setNum + " song " + (index + 1) + " missing name<br />";
+          error_msg += "Set " + set_num + " song " + (index + 1) + " missing name<br />";
           error = true;
         }
         else{
@@ -306,16 +396,19 @@
           var id = show.id + $(this).attr('id');
           var title = $(".song_name_input", this).val();
           var artist = $("#required_inputs .artist_input option:selected").text();
-          var set_or_encore = 'set'; //this needs to be checked
-          var set_num = '1'; //this needs to be checked
-          var song_num = '1'; //this needs to be checked
+          var set_or_encore = 'set';
+          var set_num = set_num;
+          var song_num = index + 1;
           var segue = ($(".segue_indic", this).hasClass("segue")) ? 1 : 0;
           var add_info = $('.add_info_input', this).val();
-          show.songs.push(new songObj(id, title, artist, set_or_encore, set_num, song_num, segue, add_info, '/opt/lampp/htdocs/Setr.us/music_directory/' + show.artist_abb + '/' + show.id + $(this).attr('id') + '.mp3', 'rt'));
+          set.songs.push(new songObj(id, title, artist, set_or_encore, set_num, song_num, segue, add_info, '/opt/lampp/htdocs/Setr.us/music_directory/' + show.artist_abb + '/' + show.id + $(this).attr('id') + '.mp3', 'rt'));
           
           song_filename_pairings += '{"current_file_name": "' + $('.filename', this).text() + '", "new_file_name": "' + show.id + $(this).attr('id') + '.mp3' + '"},';
         }
       });
+      alert('adding set to show. Currently ' + show.sets.length + ' sets in show');
+      show.sets.push(set);
+      alert('returned from adding set to show. Currently ' + show.sets.length + ' sets in show')
     });
     
     //if an error is found alert uploader then return to system
@@ -430,7 +523,7 @@
     
     return success;
   } 
-  
+  /*
   function create_show_record(){
     //create record for the new show
     var success = false;
@@ -450,11 +543,11 @@
     
     return success;
   } 
-  
+  */
   function create_song_records(){
     //create records for all the new songs
     var success = false;
-    alert(show.toJSON());
+    //alert(show.toJSON());
     $.ajax({
       url: 'php/create_song_records.php',
       type: "POST",
@@ -762,7 +855,6 @@
                           if(rename_files()){
                             alert("files renamed");
                             if(create_song_records()){alert("song records created");}
-                            //create show record
                             //prompt for exit, or upload more
                           }
                         }
@@ -913,6 +1005,8 @@
                                             var height = (($(this).children().length) * 130) + 65;
                                             $(this).parent('.set').css('height', height);
                                             $(this).css('height', height-125);
+                                            
+                                            refresh();
                                           },
                                           remove: function(event, ui) {
                                             var height = (($(this).children().length) * 130) + 65;
@@ -925,8 +1019,10 @@
                                           out: function(event, ui) {
                                             var height = (($(this).children().length) * 130) + 65;
                                             $(this).parent('.set').css('height', height);
+                                          },
+                                          stop: function(event, ui) {
+                                            refresh();
                                           }
-                                                                                          
                                         })
                                         .disableSelection();
       
